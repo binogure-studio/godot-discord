@@ -40,18 +40,7 @@ void GodotDiscord::initialize(const Dictionary &initialize) {
   handlers.spectateGame = &GodotDiscord::godot_spectateGame;
   handlers.joinRequest = &GodotDiscord::godot_joinRequest;
 
-  int autoRegister = 1;
-  const char* steamId = NULL;
-
-  if (initialize.has("auto_register")) {
-    autoRegister = ((int)initialize["auto_register"]);
-  }
-
-  if (initialize.has("steam_id")) {
-    steamId = ((String)initialize["steam_id"]).utf8().get_data();
-  }
-
-  Discord_Initialize(((String)initialize["app_id"]).utf8().get_data(), &handlers, autoRegister, steamId);
+  Discord_Initialize(((String)initialize["app_id"]).utf8().get_data(), &handlers, ((int)initialize["auto_register"]), ((String)initialize["steam_id"]).utf8().get_data());
 }
 
 void GodotDiscord::clear() {
