@@ -33,12 +33,12 @@ void GodotDiscord::initialize(Dictionary initialize) {
 
   memset(&handlers, 0, sizeof(handlers));
 
-  handlers.ready = &GodotDiscord::handleDiscordReady;
-  handlers.errored = &GodotDiscord::handleDiscordError;
-  handlers.disconnected = &GodotDiscord::handleDiscordDisconnected;
-  handlers.joinGame = &GodotDiscord::handleDiscordJoinGame;
-  handlers.spectateGame = &GodotDiscord::handleDiscordSpectateGame;
-  handlers.joinRequest = &GodotDiscord::handleDiscordJoinRequest;
+  handlers.ready = &GodotDiscord::godot_ready;
+  handlers.errored = &GodotDiscord::godot_errored;
+  handlers.disconnected = &GodotDiscord::godot_disconnected;
+  handlers.joinGame = &GodotDiscord::godot_joinGame;
+  handlers.spectateGame = &GodotDiscord::godot_spectateGame;
+  handlers.joinRequest = &GodotDiscord::godot_joinRequest;
 
   CharString buff = ((String)initialize["app_id"]).ascii();
 
@@ -99,7 +99,7 @@ void GodotDiscord::update(Dictionary presence) {
   DiscordRichPresence discordPresence;
   memset(&discordPresence, 0, sizeof(discordPresence));
 
-  //  the user's current party status
+  //  the user"s current party status
   //  idk if is necessary or optional "discord-rpc/src/serialization.cpp 108"
   if (presence.has("state")) {
     buff = ((String)presence["state"]).utf8();
@@ -192,44 +192,44 @@ void GodotDiscord::update(Dictionary presence) {
   Discord_UpdatePresence(&discordPresence);
 }
 
-void GodotDiscord::_ready(const DiscordUser* request) {
+void GodotDiscord::godot_ready(const DiscordUser* request) {
   Dictionary user;
   user[Variant("user_id")] = String(request->userId);
   user[Variant("username")] = String(request->username);
   user[Variant("discriminator")] = String(request->discriminator);
   user[Variant("avatar")] = String(request->avatar);
 
-  emit_signal("ready", user);
+  GodotDiscord::singleton->emit_signal("discord_ready", user);
 }
 
-void GodotDiscord::_disconnected(int errorCode, const char* message) {
-  emit_signal("disconnected", errorCode, message);
+void GodotDiscord::godot_disconnected(int errorCode, const char* message) {
+  GodotDiscord::singleton->emit_signal("discord_disconnected", errorCode, message);
 }
 
-void GodotDiscord::_errored(int errorCode, const char* message) {
-  emit_signal("errored", errorCode, message);
+void GodotDiscord::godot_errored(int errorCode, const char* message) {
+  GodotDiscord::singleton->emit_signal("discord_errored", errorCode, message);
 }
 
-void GodotDiscord::_joinGame(const char* joinSecret) {
-  emit_signal("joinGame", joinSecret);
+void GodotDiscord::godot_joinGame(const char* joinSecret) {
+  GodotDiscord::singleton->emit_signal("discord_joinGame", joinSecret);
 }
 
-void GodotDiscord::_spectateGame(const char* spectateSecret) {
-  emit_signal("spectateGame", spectateSecret);
+void GodotDiscord::godot_spectateGame(const char* spectateSecret) {
+  GodotDiscord::singleton->emit_signal("discord_spectateGame", spectateSecret);
 }
 
-void GodotDiscord::_joinRequest(const DiscordUser* request) {
+void GodotDiscord::godot_joinRequest(const DiscordUser* request) {
   Dictionary user;
   user[Variant("user_id")] = String(request->userId);
   user[Variant("username")] = String(request->username);
   user[Variant("discriminator")] = String(request->discriminator);
   user[Variant("avatar")] = String(request->avatar);
   
-  emit_signal("joinRequest", user);
+  GodotDiscord::singleton->emit_signal("discord_joinRequest", user);
 }
 
 void GodotDiscord::_bind_methods() {
-  ObjectTypeDB::bind_method("initialize", &GodotDiscord::init);
+  ObjectTypeDB::bind_method("initialize", &GodotDiscord::initialize);
   ObjectTypeDB::bind_method("clear", &GodotDiscord::clear);
   ObjectTypeDB::bind_method("update", &GodotDiscord::update);
   ObjectTypeDB::bind_method("reply", &GodotDiscord::reply);
@@ -237,29 +237,29 @@ void GodotDiscord::_bind_methods() {
   ObjectTypeDB::bind_method("shutdown", &GodotDiscord::shutdown);
 
   // Signals //////////////////////////////////
-  ADD_SIGNAL(MethodInfo("ready",
-    PropertyInfo(Variant::DICTIONARY, 'user')
+  ADD_SIGNAL(MethodInfo("discord_ready",
+    PropertyInfo(Variant::DICTIONARY, "user")
   ));
 
-  ADD_SIGNAL(MethodInfo("disconnected",
-    PropertyInfo(Variant::INT, 'error_code'),
-    PropertyInfo(Variant::STRING, 'message')
+  ADD_SIGNAL(MethodInfo("discord_disconnected",
+    PropertyInfo(Variant::INT, "error_code"),
+    PropertyInfo(Variant::STRING, "message")
   ));
 
-  ADD_SIGNAL(MethodInfo("errored",
-    PropertyInfo(Variant::INT, 'error_code'),
-    PropertyInfo(Variant::STRING, 'message')
+  ADD_SIGNAL(MethodInfo("discord_errored",
+    PropertyInfo(Variant::INT, "error_code"),
+    PropertyInfo(Variant::STRING, "message")
   ));
 
-  ADD_SIGNAL(MethodInfo("joinGame",
-    PropertyInfo(Variant::STRING, 'joinSecret')
+  ADD_SIGNAL(MethodInfo("discord_joinGame",
+    PropertyInfo(Variant::STRING, "join_secret")
   ));
 
-  ADD_SIGNAL(MethodInfo("spectateGame",
-    PropertyInfo(Variant::STRING, 'spectateSecret')
+  ADD_SIGNAL(MethodInfo("discord_spectateGame",
+    PropertyInfo(Variant::STRING, "spectate_secret")
   ));
 
-  ADD_SIGNAL(MethodInfo("joinRequest",
-    PropertyInfo(Variant::DICTIONARY, 'user')
+  ADD_SIGNAL(MethodInfo("discord_joinRequest",
+    PropertyInfo(Variant::DICTIONARY, "user")
   ));
 }

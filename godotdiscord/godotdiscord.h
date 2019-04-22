@@ -31,12 +31,12 @@ public:
   void shutdown();
 
   // Discord callbacks
-  void _ready(const DiscordUser* discordUser);
-  void _disconnected(int code, const char* message);
-  void _error(int code, const char* message);
-  void _join(const char* secret);
-  void _joinRequest(const DiscordUser* request);
-  void _spectateGame(const char* secret);
+  static void godot_ready(const DiscordUser* discordUser);
+  static void godot_disconnected(int code, const char* message);
+  static void godot_errored(int code, const char* message);
+  static void godot_joinGame(const char* secret);
+  static void godot_joinRequest(const DiscordUser* request);
+  static void godot_spectateGame(const char* secret);
 
 protected:
   bool isInitialized;
