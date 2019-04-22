@@ -23,9 +23,9 @@ public:
   GodotDiscord();
   ~GodotDiscord();
 
-  void initialize(Dictionary initialize);
+  void initialize(const Dictionary &initialize);
   void clear(); 
-  void update(Dictionary presence);
+  void update(const Dictionary &presence);
   void reply(String userId, int reply);
   void runCallbacks();
   void shutdown();

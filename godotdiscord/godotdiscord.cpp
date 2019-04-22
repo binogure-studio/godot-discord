@@ -26,7 +26,7 @@ void GodotDiscord::reset_singleton() {
   GodotDiscord::singleton = NULL;
 }
 
-void GodotDiscord::initialize(Dictionary initialize) {
+void GodotDiscord::initialize(const Dictionary &initialize) {
   isInitialized = true;
 
   DiscordEventHandlers handlers;
@@ -40,22 +40,18 @@ void GodotDiscord::initialize(Dictionary initialize) {
   handlers.spectateGame = &GodotDiscord::godot_spectateGame;
   handlers.joinRequest = &GodotDiscord::godot_joinRequest;
 
-  CharString buff = ((String)initialize["app_id"]).ascii();
-
   int autoRegister = 1;
   const char* steamId = NULL;
-  const char* appId = buff.get_data();
 
   if (initialize.has("auto_register")) {
     autoRegister = ((int)initialize["auto_register"]);
   }
 
   if (initialize.has("steam_id")) {
-    buff = ((String)initialize["steam_id"]).ascii();
-    steamId = buff.get_data();
+    steamId = ((String)initialize["steam_id"]).utf8().get_data();
   }
 
-  Discord_Initialize(appId, &handlers, autoRegister, steamId);
+  Discord_Initialize(((String)initialize["app_id"]).utf8().get_data(), &handlers, autoRegister, steamId);
 }
 
 void GodotDiscord::clear() {
@@ -72,7 +68,6 @@ void GodotDiscord::shutdown() {
 
 void GodotDiscord::reply(String userId, int response) {
   int resp = DISCORD_REPLY_NO;
-  CharString buff = userId.ascii();
   
   switch (response) {
     case 1:
@@ -83,34 +78,31 @@ void GodotDiscord::reply(String userId, int response) {
       break;
   }
 
-  Discord_Respond(buff.get_data(), resp);
+  Discord_Respond(userId.utf8().get_data(), resp);
 }
 
 /**
  *  https://discordapp.com/developers/docs/rich-presence/how-to
  */
-void GodotDiscord::update(Dictionary presence) {
+void GodotDiscord::update(const Dictionary &presence) {
   //  Not initialized
   if (!isInitialized) {
     return;
   }
 
-  CharString buff;
   DiscordRichPresence discordPresence;
   memset(&discordPresence, 0, sizeof(discordPresence));
 
   //  the user"s current party status
   //  idk if is necessary or optional "discord-rpc/src/serialization.cpp 108"
   if (presence.has("state")) {
-    buff = ((String)presence["state"]).utf8();
-    discordPresence.state = buff.get_data();
+    discordPresence.state = ((String)presence["state"]).utf8().get_data();
   }
 
   //  what the player is currently doing
   //  idk if is necessary or optional "discord-rpc/src/serialization.cpp 109"
   if (presence.has("details")) {
-    buff = ((String)presence["details"]).utf8();
-    discordPresence.details = buff.get_data();
+    discordPresence.details = ((String)presence["details"]).utf8().get_data();
   }
 
   //  OPTIONAL
@@ -130,29 +122,25 @@ void GodotDiscord::update(Dictionary presence) {
   //  OPTIONAL
   //  name of the uploaded image for the large profile artwork  
   if (presence.has("large_image_key")) {
-    buff = ((String)presence["large_image_key"]).utf8();
-    discordPresence.largeImageKey = buff.get_data();
+    discordPresence.largeImageKey = ((String)presence["large_image_key"]).utf8().get_data();
   }
 
   //  OPTIONAL
   //  tooltip for the largeImageKey
   if (presence.has("large_image_text")) {
-    buff = ((String)presence["large_image_text"]).utf8();
-    discordPresence.largeImageText = buff.get_data();
+    discordPresence.largeImageText = ((String)presence["large_image_text"]).utf8().get_data();
   }
 
   //  OPTIONAL
   //  name of the uploaded image for the small profile artwork
   if (presence.has("small_image_key")) {
-    buff = ((String)presence["small_image_key"]).utf8();
-    discordPresence.smallImageKey = buff.get_data();
+    discordPresence.smallImageKey = ((String)presence["small_image_key"]).utf8().get_data();
   }
 
   //  OPTIONAL
   //  tootltip for the smallImageKey
   if (presence.has("small_image_text")) {
-    buff = ((String)presence["small_image_text"]).utf8();
-    discordPresence.smallImageText = buff.get_data();
+    discordPresence.smallImageText = ((String)presence["small_image_text"]).utf8().get_data();
   }
 
   // OPTIONAL
@@ -161,8 +149,7 @@ void GodotDiscord::update(Dictionary presence) {
 
     //  id of the player's party, lobby, or group
     if (presence.has("party_id")) {
-      buff = ((String)presence["party_id"]).utf8();
-      discordPresence.partyId = buff.get_data();
+      discordPresence.partyId = ((String)presence["party_id"]).utf8().get_data();
     }
 
     //  current size of the player's party, lobby, or group
@@ -177,16 +164,14 @@ void GodotDiscord::update(Dictionary presence) {
   //  unique hashed string for Spectate button
   //  discord-rpc/src/serialization.cpp 147
   if (presence.has("spectate_secret")) {
-    buff = ((String)presence["spectate_secret"]).utf8();
-    discordPresence.spectateSecret = buff.get_data();
+    discordPresence.spectateSecret = ((String)presence["spectate_secret"]).utf8().get_data();
   }
 
   //  OPTIONAL
   //  unique hashed string for chat invitations and Ask to Join
   //  discord-rpc/src/serialization.cpp 147
   if (presence.has("join_secret")) {
-    buff = ((String)presence["join_secret"]).utf8();  
-    discordPresence.joinSecret = buff.get_data();
+    discordPresence.joinSecret = ((String)presence["join_secret"]).utf8().get_data();
   }
 
   Discord_UpdatePresence(&discordPresence);
