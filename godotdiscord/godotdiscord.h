@@ -31,12 +31,12 @@ public:
   void shutdown();
 
   // Discord callbacks
-  void onReady(const DiscordUser* discordUser);
-  void onDisconnected(int code, const char* message);
-  void onError(int code, const char* message);
-  void onJoin(const char* secret);
-  void onJoinRequest(const DiscordUser* request);
-  void onSpectateGame(const char* secret);
+  void _ready(const DiscordUser* discordUser);
+  void _disconnected(int code, const char* message);
+  void _error(int code, const char* message);
+  void _join(const char* secret);
+  void _joinRequest(const DiscordUser* request);
+  void _spectateGame(const char* secret);
 
 protected:
   bool isInitialized;

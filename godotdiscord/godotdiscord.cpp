@@ -26,7 +26,6 @@ void GodotDiscord::reset_singleton() {
   GodotDiscord::singleton = NULL;
 }
 
-// Initialize Steamworks
 void GodotDiscord::initialize(Dictionary initialize) {
   isInitialized = true;
 
