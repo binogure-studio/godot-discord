@@ -5,6 +5,7 @@ GodotDiscord *GodotDiscord::singleton = NULL;
 GodotDiscord::GodotDiscord() {
   isInitialized = false;
   singleton = this;
+  memset(&discordPresence, 0, sizeof(discordPresence));
 }
 
 GodotDiscord::~GodotDiscord() {
@@ -26,7 +27,7 @@ void GodotDiscord::reset_singleton() {
   GodotDiscord::singleton = NULL;
 }
 
-void GodotDiscord::initialize(const Dictionary &initialize) {
+void GodotDiscord::initialize(const String &appId, int auto_register, const String &steamId) {
   isInitialized = true;
 
   DiscordEventHandlers handlers;
@@ -40,7 +41,7 @@ void GodotDiscord::initialize(const Dictionary &initialize) {
   handlers.spectateGame = &GodotDiscord::godot_spectateGame;
   handlers.joinRequest = &GodotDiscord::godot_joinRequest;
 
-  Discord_Initialize(((String)initialize["app_id"]).utf8().get_data(), &handlers, ((int)initialize["auto_register"]), ((String)initialize["steam_id"]).utf8().get_data());
+  Discord_Initialize(appId.utf8().get_data(), &handlers, auto_register, steamId.utf8().get_data());
 }
 
 void GodotDiscord::clear() {
@@ -70,97 +71,44 @@ void GodotDiscord::reply(String userId, int response) {
   Discord_Respond(userId.utf8().get_data(), resp);
 }
 
-/**
- *  https://discordapp.com/developers/docs/rich-presence/how-to
- */
-void GodotDiscord::update(const Dictionary &presence) {
+void GodotDiscord::setState(const String &state, const String &details) {
+  discordPresence.state = strdup(state.utf8().get_data());
+  discordPresence.details = strdup(details.utf8().get_data());
+}
+
+void GodotDiscord::setTimestamp(int64_t start_timestamp, int64_t end_timestamp) {
+  discordPresence.startTimestamp = start_timestamp;
+  discordPresence.endTimestamp = end_timestamp;
+}
+
+void GodotDiscord::setLargeImage(const String &large_image_text, const String &large_image_key) {
+  discordPresence.largeImageText = strdup(large_image_text.utf8().get_data());
+  discordPresence.largeImageKey = strdup(large_image_key.utf8().get_data());
+}
+
+void GodotDiscord::setSmallImage(const String &small_image_text, const String &small_image_key) {
+  discordPresence.smallImageText = strdup(small_image_text.utf8().get_data());
+  discordPresence.smallImageKey = strdup(small_image_key.utf8().get_data());
+}
+
+void GodotDiscord::setPartySize(const String &party_id, int size_value, int max_value) {
+  discordPresence.partyId = strdup(party_id.utf8().get_data());
+  discordPresence.partySize = size_value;
+  discordPresence.partyMax = max_value;
+}
+
+void GodotDiscord::setSpectateSecret(const String &spectate_secret) {
+  discordPresence.spectateSecret = strdup(spectate_secret.utf8().get_data());
+}
+
+void GodotDiscord::setJoinSecret(const String &join_secret) {
+  discordPresence.joinSecret = strdup(join_secret.utf8().get_data());
+}
+
+void GodotDiscord::update() {
   //  Not initialized
   if (!isInitialized) {
     return;
-  }
-
-  DiscordRichPresence discordPresence;
-  memset(&discordPresence, 0, sizeof(discordPresence));
-
-  //  the user"s current party status
-  //  idk if is necessary or optional "discord-rpc/src/serialization.cpp 108"
-  if (presence.has("state")) {
-    discordPresence.state = ((String)presence["state"]).utf8().get_data();
-  }
-
-  //  what the player is currently doing
-  //  idk if is necessary or optional "discord-rpc/src/serialization.cpp 109"
-  if (presence.has("details")) {
-    discordPresence.details = ((String)presence["details"]).utf8().get_data();
-  }
-
-  //  OPTIONAL
-  //  discord-rpc/src/serialization.cpp 111
-  //  epoch seconds for game start - including will show time as "elapsed"
-  if (presence.has("start_timestamp")) {
-    discordPresence.startTimestamp = (int64_t)presence["start_timestamp"];
-  }
-
-  //  OPTIONAL
-  //  discord-rpc/src/serialization.cpp 111
-  //  epoch seconds for game end - including will show time as "remaining"
-  if (presence.has("end_timestamp")) {
-    discordPresence.endTimestamp = (int64_t)presence["end_timestamp"];
-  }
-
-  //  OPTIONAL
-  //  name of the uploaded image for the large profile artwork  
-  if (presence.has("large_image_key")) {
-    discordPresence.largeImageKey = ((String)presence["large_image_key"]).utf8().get_data();
-  }
-
-  //  OPTIONAL
-  //  tooltip for the largeImageKey
-  if (presence.has("large_image_text")) {
-    discordPresence.largeImageText = ((String)presence["large_image_text"]).utf8().get_data();
-  }
-
-  //  OPTIONAL
-  //  name of the uploaded image for the small profile artwork
-  if (presence.has("small_image_key")) {
-    discordPresence.smallImageKey = ((String)presence["small_image_key"]).utf8().get_data();
-  }
-
-  //  OPTIONAL
-  //  tootltip for the smallImageKey
-  if (presence.has("small_image_text")) {
-    discordPresence.smallImageText = ((String)presence["small_image_text"]).utf8().get_data();
-  }
-
-  // OPTIONAL
-  // discord-rpc/src/serialization.cpp 136
-  if (presence.has("party_id") || presence.has("party_size") || presence.has("party_max")) {
-
-    //  id of the player's party, lobby, or group
-    if (presence.has("party_id")) {
-      discordPresence.partyId = ((String)presence["party_id"]).utf8().get_data();
-    }
-
-    //  current size of the player's party, lobby, or group
-    //  maximum size of the player's party, lobby, or group
-    if (presence.has("party_size") && presence.has("party_max")) {
-      discordPresence.partySize = (int)presence["party_size"];
-      discordPresence.partyMax = (int)presence["party_max"];
-    }
-  }
-
-  //  OPTIONAL
-  //  unique hashed string for Spectate button
-  //  discord-rpc/src/serialization.cpp 147
-  if (presence.has("spectate_secret")) {
-    discordPresence.spectateSecret = ((String)presence["spectate_secret"]).utf8().get_data();
-  }
-
-  //  OPTIONAL
-  //  unique hashed string for chat invitations and Ask to Join
-  //  discord-rpc/src/serialization.cpp 147
-  if (presence.has("join_secret")) {
-    discordPresence.joinSecret = ((String)presence["join_secret"]).utf8().get_data();
   }
 
   Discord_UpdatePresence(&discordPresence);
@@ -209,6 +157,14 @@ void GodotDiscord::_bind_methods() {
   ObjectTypeDB::bind_method("reply", &GodotDiscord::reply);
   ObjectTypeDB::bind_method("run_callbacks", &GodotDiscord::runCallbacks);
   ObjectTypeDB::bind_method("shutdown", &GodotDiscord::shutdown);
+
+  ObjectTypeDB::bind_method("set_state", &GodotDiscord::setState);
+  ObjectTypeDB::bind_method("set_timestamp", &GodotDiscord::setTimestamp);
+  ObjectTypeDB::bind_method("set_large_image", &GodotDiscord::setLargeImage);
+  ObjectTypeDB::bind_method("set_small_image", &GodotDiscord::setSmallImage);
+  ObjectTypeDB::bind_method("set_party_size", &GodotDiscord::setPartySize);
+  ObjectTypeDB::bind_method("set_spectate_secret", &GodotDiscord::setSpectateSecret);
+  ObjectTypeDB::bind_method("set_join_secret", &GodotDiscord::setJoinSecret);
 
   // Signals //////////////////////////////////
   ADD_SIGNAL(MethodInfo("discord_ready",

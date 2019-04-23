@@ -23,12 +23,20 @@ public:
   GodotDiscord();
   ~GodotDiscord();
 
-  void initialize(const Dictionary &initialize);
+  void initialize(const String &appId, int auto_register, const String &steamId);
   void clear(); 
-  void update(const Dictionary &presence);
+  void update();
   void reply(String userId, int reply);
   void runCallbacks();
   void shutdown();
+
+  void setState(const String &state, const String &details);
+  void setTimestamp(int64_t start_timestamp, int64_t end_timestamp);
+  void setLargeImage(const String &large_image_text, const String &large_image_key);
+  void setSmallImage(const String &small_image_text, const String &small_image_key);
+  void setPartySize(const String &party_id, int size_value, int max_value);
+  void setSpectateSecret(const String &spectate_secret);
+  void setJoinSecret(const String &join_secret);
 
   // Discord callbacks
   static void godot_ready(const DiscordUser* discordUser);
@@ -40,6 +48,7 @@ public:
 
 protected:
   bool isInitialized;
+  DiscordRichPresence discordPresence;
 
   static void _bind_methods();
   static GodotDiscord *singleton;
