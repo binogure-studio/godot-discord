@@ -31,7 +31,8 @@ public:
   void shutdown();
 
   void setState(const String &state, const String &details);
-  void setTimestamp(int64_t start_timestamp, int64_t end_timestamp);
+  void setStartTimestamp(int64_t start_timestamp);
+  void setEndTimestamp(int64_t end_timestamp);
   void setLargeImage(const String &large_image_text, const String &large_image_key);
   void setSmallImage(const String &small_image_text, const String &small_image_key);
   void setPartySize(const String &party_id, int size_value, int max_value);

@@ -1,4 +1,4 @@
-def can_build(platform):
+def can_build(platform, env):
   return platform=="x11" or platform=="windows" or platform=="osx"
 
 def configure(env):
@@ -13,7 +13,6 @@ def configure(env):
     else: # 64 bit
       env.Append(RPATH=[env.Literal('\\$$ORIGIN/linux64')])
       env.Append(LIBPATH=["#modules/godotdiscord/sdk/discord-rpc/linux64"])
-
   elif env["platform"] == "windows":
     # mostly VisualStudio
     if env["CC"] == "cl":
@@ -23,7 +22,6 @@ def configure(env):
         env.Append(LIBPATH=["#modules/godotdiscord/sdk/discord-rpc/win32"])
       else: # 64 bit
         env.Append(LIBPATH=["#modules/godotdiscord/sdk/discord-rpc/win64"])
-
     # mostly "gcc"
     else:
       env.Append(LIBS=["discord-rpc"])
@@ -32,7 +30,6 @@ def configure(env):
         env.Append(LIBPATH=["#modules/godotdiscord/sdk/discord-rpc/win32"])
       else: # 64 bit
         env.Append(LIBPATH=["#modules/godotdiscord/sdk/discord-rpc/win64"])
-
   elif env["platform"] == "osx":
     env.Append(LIBS=["discord-rpc"])
     env.Append(LIBPATH=['#modules/godotdiscord/sdk/discord-rpc/osx32'])

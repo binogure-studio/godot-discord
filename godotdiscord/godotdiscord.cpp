@@ -76,8 +76,12 @@ void GodotDiscord::setState(const String &state, const String &details) {
   discordPresence.details = strdup(details.utf8().get_data());
 }
 
-void GodotDiscord::setTimestamp(int64_t start_timestamp, int64_t end_timestamp) {
+
+void GodotDiscord::setStartTimestamp(int64_t start_timestamp) {
   discordPresence.startTimestamp = start_timestamp;
+}
+
+void GodotDiscord::setEndTimestamp(int64_t end_timestamp) {
   discordPresence.endTimestamp = end_timestamp;
 }
 
@@ -159,7 +163,8 @@ void GodotDiscord::_bind_methods() {
   ObjectTypeDB::bind_method("shutdown", &GodotDiscord::shutdown);
 
   ObjectTypeDB::bind_method("set_state", &GodotDiscord::setState);
-  ObjectTypeDB::bind_method("set_timestamp", &GodotDiscord::setTimestamp);
+  ObjectTypeDB::bind_method("set_start_timestamp", &GodotDiscord::setStartTimestamp);
+  ObjectTypeDB::bind_method("set_end_timestamp", &GodotDiscord::setEndTimestamp);
   ObjectTypeDB::bind_method("set_large_image", &GodotDiscord::setLargeImage);
   ObjectTypeDB::bind_method("set_small_image", &GodotDiscord::setSmallImage);
   ObjectTypeDB::bind_method("set_party_size", &GodotDiscord::setPartySize);
